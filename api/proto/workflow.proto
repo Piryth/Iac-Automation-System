@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+package automate;
+option go_package = "piryth/ias/api/proto";
+
+message Trigger {
+string type = 1; // ex: "cron"
+map<string, string> config = 2; // ex: {"schedule": "0 2 * * *"}
+}
+
+message Node {
+string id = 1;
+string type = 2; // ex: "command"
+repeated string depends_on = 3;
+map<string, string> config = 4; // ex: {"command": "pg_dump ..."}
+
+int32 retry_attempts = 5;
+string retry_backoff = 6;
+repeated string on_failure = 7;
+string compensation = 8;
+}
+
+message Workflow {
+string id = 1;
+string name = 2;
+string description = 3;
+Trigger trigger = 4;
+repeated Node nodes = 5;
+
+string raw_yaml = 6;
+}
+
+message ApplyRequest {
+Workflow workflow = 1;
+}
+
+message ApplyResponse {
+bool success = 1;
+string message = 2;
+}
+
+service AutomateService {
+rpc ApplyWorkflow(ApplyRequest) returns (ApplyResponse);
+}
