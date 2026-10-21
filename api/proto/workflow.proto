@@ -1,0 +1,71 @@
+syntax = "proto3";
+
+// Adjust this package and go_package to match your project's setup
+package ias;
+option go_package = "piryth/ias/api/proto";
+
+// --- Service Definition ---
+
+service AutomateService {
+  rpc ApplyWorkflow(ApplyRequest) returns (ApplyResponse);
+  rpc DeleteWorkflow(DeleteRequest) returns (DeleteResponse);
+  rpc ListWorkflows(ListRequest) returns (ListResponse);
+}
+
+message ApplyRequest {
+  Workflow workflow = 1;
+}
+
+message ApplyResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message ListRequest {}
+message ListResponse {
+  bool success = 1;
+  string message = 2;
+  repeated Workflow workflows = 3;
+}
+
+message DeleteRequest {
+  string id = 1;
+}
+message DeleteResponse {
+  bool success = 1;
+}
+
+// --- HDAG V1 Data Structures ---
+
+message Workflow {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  Trigger trigger = 4;
+
+  // The execution logic is now encapsulated in a Graph
+  Graph graph = 5;
+}
+
+message Trigger {
+  string type = 1;
+  map<string, string> config = 2;
+}
+
+// The unified Graph structure
+message Graph {
+  string entrypoint = 1;
+
+  // Nodes is now a repeated list inside the Graph
+  repeated Node nodes = 2;
+}
+
+message Node {
+  string id = 1;
+  string type = 2;
+
+  // Forward routing (replaces depends_on)
+  string on_success = 3;
+
+  map<string, string> config = 4;
+}
