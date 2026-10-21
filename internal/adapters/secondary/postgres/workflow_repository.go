@@ -78,6 +78,14 @@ func (r *pgWorkflowRepository) GetAll(ctx context.Context) ([]domain.Workflow, e
 	return workflows, nil
 }
 
+func (r *pgWorkflowRepository) DeleteByID(ctx context.Context, id string) error {
+	err := r.queries.DeleteWorkflowByID(ctx, id)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // mapToDomain is a helper to convert sqlc DB rows back into clean Domain entities
 func (r *pgWorkflowRepository) mapToDomain(id, name, desc string, triggerBytes, graphBytes json.RawMessage) (domain.Workflow, error) {
 	var trigger domain.Trigger

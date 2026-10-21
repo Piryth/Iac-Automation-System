@@ -13,3 +13,6 @@ SELECT id, name, description, trigger, graph FROM workflows WHERE id = $1;
 
 -- name: GetAllWorkflows :many
 SELECT id, name, description, trigger, graph FROM workflows;
+
+-- name: DeleteWorkflowByID :exec
+DELETE from workflows where id = $1;

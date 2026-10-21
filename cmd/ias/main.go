@@ -1,17 +1,17 @@
 package main
 
 import (
-	"context"
 	"database/sql"
 	"fmt"
 	"log"
 	"net"
 	pb "piryth/ias/api/proto"
-	"piryth/ias/internal/adapters/primary/cron"
-	grpc2 "piryth/ias/internal/adapters/secondary/grpcadapter"
+	"piryth/ias/internal/adapters/primary/grpcadapter"
+	"piryth/ias/internal/adapters/primary/triggers"
 	"piryth/ias/internal/adapters/secondary/nodes"
 	"piryth/ias/internal/adapters/secondary/postgres"
 	"piryth/ias/internal/adapters/secondary/runner"
+
 	"piryth/ias/internal/config"
 	"piryth/ias/internal/core/services"
 
@@ -46,30 +46,28 @@ func main() {
 	repo := postgres.NewPostgresWorkflowRepository(db)
 	osRunner := runner.NewOSRunner()
 
-	// Initialising node registry
-	registry := services.NewNodeRegistry()
-	registry.Register("command", nodes.NewCommandNode(osRunner))
+	// Initialising node and trigger registry
+	nodeRegistry := services.NewNodeRegistry()
+	triggerRegistry := services.NewTriggerRegistry()
 
-	workflowService := services.NewWorkflowService(repo, *registry)
+	nodeRegistry.Register("command", nodes.NewCommandNode(osRunner))
+	cronTrigger := triggers.NewCronTrigger()
 
-	// Init primary adapters
-	scheduler := cron.NewSchedulerAdapter(workflowService, repo)
-	if err := scheduler.Start(context.Background()); err != nil {
-		log.Fatalf("Failed to start scheduler: %v", err)
-	}
-	fmt.Println("Cron scheduler started")
+	triggerRegistry.Register("cron", cronTrigger)
+	fmt.Println("Cron trigger adapter initialized")
+
+	workflowService := services.NewWorkflowService(repo, *nodeRegistry, *triggerRegistry)
 
 	// Rcp server initialization
-	grpcHandler := grpc.NewGrpcHandler(workflowService)
+	grpcHandler := grpcadapter.NewHandler(workflowService)
 	grpcServer := grpc.NewServer()
 	port := cfg.GRPCPort
-	lis, err := net.Listen("tcp", port)
+	lis, err := net.Listen("tcp", ":"+cfg.GRPCPort)
 	if err != nil {
 		log.Fatalf("Failed to listen on port %s : %v", port, err)
 	}
-	server := grpc2.NewServer()
 
-	pb.RegisterAutomateServiceServer(grpcServer, server)
+	pb.RegisterAutomateServiceServer(grpcServer, grpcHandler)
 
 	reflection.Register(grpcServer)
 

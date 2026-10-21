@@ -8,7 +8,7 @@ import (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "iascli",
+	Use:   "ias",
 	Short: "CLI tool for Ias automation plateform",
 	Long:  `IasCli manages an IaS system, from workflow deployment to management`,
 
@@ -26,4 +26,5 @@ func Execute() {
 
 func init() {
 	rootCmd.AddCommand(applyCmd)
+	rootCmd.AddCommand(planCmd)
 }

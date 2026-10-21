@@ -1,13 +1,15 @@
 syntax = "proto3";
 
 // Adjust this package and go_package to match your project's setup
-package automate;
+package ias;
 option go_package = "piryth/ias/api/proto";
 
 // --- Service Definition ---
 
 service AutomateService {
   rpc ApplyWorkflow(ApplyRequest) returns (ApplyResponse);
+  rpc DeleteWorkflow(DeleteRequest) returns (DeleteResponse);
+  rpc ListWorkflows(ListRequest) returns (ListResponse);
 }
 
 message ApplyRequest {
@@ -17,6 +19,20 @@ message ApplyRequest {
 message ApplyResponse {
   bool success = 1;
   string message = 2;
+}
+
+message ListRequest {}
+message ListResponse {
+  bool success = 1;
+  string message = 2;
+  repeated Workflow workflows = 3;
+}
+
+message DeleteRequest {
+  string id = 1;
+}
+message DeleteResponse {
+  bool success = 1;
 }
 
 // --- HDAG V1 Data Structures ---

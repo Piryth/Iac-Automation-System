@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"piryth/ias/internal/cli/parser"
 	"time"
 
 	pb "piryth/ias/api/proto"
-	"piryth/ias/internal/parser"
 
 	"github.com/spf13/cobra"
 	"google.golang.org/grpc"

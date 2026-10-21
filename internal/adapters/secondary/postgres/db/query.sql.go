@@ -10,6 +10,15 @@ import (
 	"encoding/json"
 )
 
+const deleteWorkflowByID = `-- name: DeleteWorkflowByID :exec
+DELETE from workflows where id = $1
+`
+
+func (q *Queries) DeleteWorkflowByID(ctx context.Context, id string) error {
+	_, err := q.db.ExecContext(ctx, deleteWorkflowByID, id)
+	return err
+}
+
 const getAllWorkflows = `-- name: GetAllWorkflows :many
 SELECT id, name, description, trigger, graph FROM workflows
 `
